@@ -1,74 +1,70 @@
-import time
+from datetime import datetime
+import sys
 
-# 全域變數：用於方法 3 的查表（Cache）
-memo = {}
+# 為了防止遞迴深度不足導致錯誤 (Python 預設通常是 1000)
+sys.setrecursionlimit(2000)
 
-# 方法 1：直接使用 Python 內建運算子
-# 時間複雜度：O(1) 或 O(log n) 取決於底層實作，最快
-def power2n_method1(n):
+# 方法 1：內建運算
+def power2n1(n):
     return 2**n
 
-# 方法 2a：使用遞迴 (加法邏輯)
-# 邏輯：2^n = 2^(n-1) + 2^(n-1)
-# 缺點：這是「樹狀遞迴」，會重複計算非常多次，n 稍大就會卡死。
-# 時間複雜度：O(2^n) - 極慢
-def power2n_method2a(n):
-    if n == 0:
-        return 1
-    return power2n_method2a(n-1) + power2n_method2a(n-1)
+# 方法 2a：用遞迴 (加法邏輯)
+# 缺點：極慢，因為會重複計算 (O(2^n))
+def power2n2(n):
+    if n == 0: return 1
+    return power2n2(n-1) + power2n2(n-1)
 
-# 方法 2b：使用遞迴 (乘法邏輯)
-# 邏輯：2^n = 2 * 2^(n-1)
-# 優點：這是「線性遞迴」，比 2a 快很多。
-# 時間複雜度：O(n)
-def power2n_method2b(n):
-    if n == 0:
-        return 1
-    return 2 * power2n_method2b(n-1)
+# 方法 2b：用遞迴 (乘法邏輯)
+# 優點：快，線性時間 (O(n))
+def power2n3(n):
+    if n == 0: return 1
+    return 2 * power2n3(n-1)
 
-# 方法 3：使用遞迴 + 查表 (Memoization)
-# 邏輯：雖然使用加法邏輯，但加上查表後，計算過的 n 就不會再算。
-# 時間複雜度：O(n) - 第一次算需要時間，之後是 O(1)
-def power2n_method3(n):
-    # 步驟 1: 查表，如果有算過就直接回傳
-    if n in memo:
-        return memo[n]
+# 方法 3：用遞迴 (加法邏輯) + 查表
+# 優點：透過查表 (Memoization) 解決了方法 2a 重複計算的問題
+def power2n4(n, m={}):
+    if n == 0: return 1
+    if n in m: return m[n]      # 如果算過，直接查表回傳
     
-    # 基礎情況
-    if n == 0:
-        return 1
+    # 下面這行原本在方法 2a 會算兩次，現在算完第一次後會存入 m
+    val = power2n4(n-1, m) + power2n4(n-1, m)
     
-    # 步驟 2: 計算並寫入表 (依據你的要求使用加法邏輯)
-    result = power2n_method3(n-1) + power2n_method3(n-1)
-    memo[n] = result
-    
-    return result
+    m[n] = val                  # 紀錄答案
+    return val
 
-# --- 測試區 ---
+# --- 執行測試 ---
+n_value = 32  # 建議設 30~32 左右，再大方法 2a 會跑非常久
 
-n_val = 30  # 建議不要設太大，否則方法 2a 會跑不完
-
-print(f"計算 2 的 {n_val} 次方：")
+print(f"--- 計算 2 的 {n_value} 次方效能比較 ---")
 
 # 測試方法 1
-t0 = time.time()
-print(f"方法 1 (2**n): {power2n_method1(n_val)}")
-print(f"耗時: {time.time() - t0:.6f} 秒\n")
+startTime = datetime.now()
+print(f"power2n1({n_value})=", power2n1(n_value))
+endTime = datetime.now()
+seconds = endTime - startTime
+print(f'time:{seconds}')
+print("-" * 20)
 
-# 測試方法 2b (先測這個，因為 2a 很慢)
-t0 = time.time()
-print(f"方法 2b (2*遞迴): {power2n_method2b(n_val)}")
-print(f"耗時: {time.time() - t0:.6f} 秒\n")
+# 測試方法 2a (最慢)
+startTime = datetime.now()
+print(f"power2n2({n_value})=", power2n2(n_value))
+endTime = datetime.now()
+seconds = endTime - startTime
+print(f'time:{seconds}')
+print("-" * 20)
+
+# 測試方法 2b
+startTime = datetime.now()
+print(f"power2n3({n_value})=", power2n3(n_value))
+endTime = datetime.now()
+seconds = endTime - startTime
+print(f'time:{seconds}')
+print("-" * 20)
 
 # 測試方法 3 (查表)
-t0 = time.time()
-# 為了公平比較，先清空 memo
-memo = {} 
-print(f"方法 3 (查表): {power2n_method3(n_val)}")
-print(f"耗時: {time.time() - t0:.6f} 秒\n")
-
-# 測試方法 2a (最慢，放最後)
-print("正在計算方法 2a (請耐心等待)...")
-t0 = time.time()
-print(f"方法 2a (相加): {power2n_method2a(n_val)}")
-print(f"耗時: {time.time() - t0:.6f} 秒")
+startTime = datetime.now()
+# 注意：為了公平測試，這裡手動清空預設參數的字典，確保重新計算
+print(f"power2n4({n_value})=", power2n4(n_value, {}))
+endTime = datetime.now()
+seconds = endTime - startTime
+print(f'time:{seconds}')
