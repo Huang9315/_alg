@@ -40,9 +40,3 @@ def min_edit_distance(str1, str2):
     # 矩陣右下角即為最終答案
     return dp[m][n]
 
-# --- 測試範例 ---
-source = "horse"
-target = "ros"
-
-distance = min_edit_distance(source, target)
-print(f"'{source}' 到 '{target}' 的最小編輯距離為: {distance}")
