@@ -1,0 +1,74 @@
+import time
+
+# 全域變數：用於方法 3 的查表（Cache）
+memo = {}
+
+# 方法 1：直接使用 Python 內建運算子
+# 時間複雜度：O(1) 或 O(log n) 取決於底層實作，最快
+def power2n_method1(n):
+    return 2**n
+
+# 方法 2a：使用遞迴 (加法邏輯)
+# 邏輯：2^n = 2^(n-1) + 2^(n-1)
+# 缺點：這是「樹狀遞迴」，會重複計算非常多次，n 稍大就會卡死。
+# 時間複雜度：O(2^n) - 極慢
+def power2n_method2a(n):
+    if n == 0:
+        return 1
+    return power2n_method2a(n-1) + power2n_method2a(n-1)
+
+# 方法 2b：使用遞迴 (乘法邏輯)
+# 邏輯：2^n = 2 * 2^(n-1)
+# 優點：這是「線性遞迴」，比 2a 快很多。
+# 時間複雜度：O(n)
+def power2n_method2b(n):
+    if n == 0:
+        return 1
+    return 2 * power2n_method2b(n-1)
+
+# 方法 3：使用遞迴 + 查表 (Memoization)
+# 邏輯：雖然使用加法邏輯，但加上查表後，計算過的 n 就不會再算。
+# 時間複雜度：O(n) - 第一次算需要時間，之後是 O(1)
+def power2n_method3(n):
+    # 步驟 1: 查表，如果有算過就直接回傳
+    if n in memo:
+        return memo[n]
+    
+    # 基礎情況
+    if n == 0:
+        return 1
+    
+    # 步驟 2: 計算並寫入表 (依據你的要求使用加法邏輯)
+    result = power2n_method3(n-1) + power2n_method3(n-1)
+    memo[n] = result
+    
+    return result
+
+# --- 測試區 ---
+
+n_val = 30  # 建議不要設太大，否則方法 2a 會跑不完
+
+print(f"計算 2 的 {n_val} 次方：")
+
+# 測試方法 1
+t0 = time.time()
+print(f"方法 1 (2**n): {power2n_method1(n_val)}")
+print(f"耗時: {time.time() - t0:.6f} 秒\n")
+
+# 測試方法 2b (先測這個，因為 2a 很慢)
+t0 = time.time()
+print(f"方法 2b (2*遞迴): {power2n_method2b(n_val)}")
+print(f"耗時: {time.time() - t0:.6f} 秒\n")
+
+# 測試方法 3 (查表)
+t0 = time.time()
+# 為了公平比較，先清空 memo
+memo = {} 
+print(f"方法 3 (查表): {power2n_method3(n_val)}")
+print(f"耗時: {time.time() - t0:.6f} 秒\n")
+
+# 測試方法 2a (最慢，放最後)
+print("正在計算方法 2a (請耐心等待)...")
+t0 = time.time()
+print(f"方法 2a (相加): {power2n_method2a(n_val)}")
+print(f"耗時: {time.time() - t0:.6f} 秒")
